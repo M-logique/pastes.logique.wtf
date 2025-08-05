@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pastes-logique-wtf",
+  "compatibility_date": "2024-04-01",
+  "main": "./src/index.tsx",
+  "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "logique-pastes",
+        "database_id": ""
+    }
+  ],
+  "vars": {
+    "PASSWORD": "", // Your password (Leave empty to disable)
+    "MAX_FILES": "0" // File Limit (fill with 0 for no limit)
+  }
+}
