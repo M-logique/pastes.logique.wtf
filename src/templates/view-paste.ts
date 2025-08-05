@@ -141,6 +141,29 @@ export const getViewPasteHTML = (paste: PasteData): string => `<!DOCTYPE html>
       line-height: 20px !important;
     }
 
+        /* ===== AESTHETIC SCROLLBAR STYLING (THE FIX) ===== */
+    /* For Firefox */
+    .code-content {
+      scrollbar-width: thin;
+      scrollbar-color: #555 #1A1A1A; /* thumb-color track-color */
+    }
+    /* For Webkit Browsers (Chrome, Safari, Edge) */
+    .code-content::-webkit-scrollbar {
+      height: 8px; /* Controls the height of the horizontal scrollbar */
+    }
+    .code-content::-webkit-scrollbar-track {
+      background: transparent; /* Makes the track invisible */
+    }
+    .code-content::-webkit-scrollbar-thumb {
+      background-color: #444; /* A subtle dark grey for the handle */
+      border-radius: 10px;
+      border: 2px solid #1A1A1A; /* Creates padding around the thumb */
+      background-clip: content-box;
+    }
+    .code-content::-webkit-scrollbar-thumb:hover {
+      background-color: #555; /* Slightly lighter on hover */
+    }
+
     /* ===== Actions & Buttons ===== */
     .actions { display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap; }
     .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
