@@ -3,6 +3,7 @@ import type { CloudflareBindings } from "./types"
 import pasteRoutes from "./routes/paste"
 import pageRoutes from "./routes/pages"
 import rawRoutes from "./routes/raw"
+import { getNotFoundPageHTML } from "./templates/not-found"
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -43,5 +44,9 @@ app.get("/test", (c) => {
 app.route("/", pageRoutes)
 app.route("/paste", pasteRoutes)
 app.route("/raw", rawRoutes)
+
+app.notFound((c) => {
+  return c.html(getNotFoundPageHTML(), 404)
+})
 
 export default app

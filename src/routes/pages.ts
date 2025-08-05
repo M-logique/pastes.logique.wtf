@@ -1,7 +1,8 @@
 import { Hono } from "hono"
-import type { CloudflareBindings, PasteData } from "../types"
+import type { CloudflareBindings, FileData, PasteData } from "../types"
 import { getMainPageHTML } from "../templates/main-page"
 import { getViewPasteHTML } from "../templates/view-paste"
+import { getNotFoundPageHTML } from "../templates/not-found"
 
 const pages = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -23,9 +24,8 @@ pages.get("/:namespace", async (c) => {
     const pasteResult = await c.env.DB.prepare(pasteQuery).bind(namespace).first()
 
     if (!pasteResult) {
-      return c.json({ error: "Paste not found" }, 404)
+      return c.html(getNotFoundPageHTML(), 404)
     }
-
     // Get files
     const filesQuery = `SELECT file_index, filename, language, content FROM files WHERE paste_namespace = ? ORDER BY file_index`
     const filesResult = await c.env.DB.prepare(filesQuery).bind(namespace).all()
@@ -46,13 +46,52 @@ pages.get("/:namespace", async (c) => {
     }
 
     const storedAccessKey = c.req.header("X-Access-Key") || c.req.query("accessKey")
-    const hasAccess = storedAccessKey === paste.accessKey
 
-    return c.html(getViewPasteHTML(paste, hasAccess))
+    return c.html(getViewPasteHTML(paste, ))
   } catch (error) {
     console.error("Error retrieving paste:", error)
     return c.json({ error: "Internal server error" }, 500)
   }
 })
+
+pages.delete("/paste/:namespace", async (c) => {
+  try {
+    const { namespace } = c.req.param();
+    const db = c.env.DB;
+
+    // 1. Get the provided access key from the 'Authorization: Bearer <key>' header
+    const authHeader = c.req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return c.json({ error: "Authorization header is missing or invalid." }, 401);
+    }
+    const providedKey = authHeader.split(" ")[1];
+
+    // 2. Retrieve the *correct* access key from the database to verify ownership
+    const pasteCheck = await db.prepare(
+      `SELECT access_key FROM pastes WHERE namespace = ?`
+    ).bind(namespace).first<{ access_key: string }>();
+
+    if (!pasteCheck) {
+      return c.html(getNotFoundPageHTML(), 404)
+    }
+
+    // 3. **CRUCIAL**: Compare the provided key with the stored key
+    if (pasteCheck.access_key !== providedKey) {
+      return c.json({ error: "Access denied. Invalid access key." }, 403); // 403 Forbidden
+    }
+
+    // 4. If keys match, proceed with deletion in a batch (transaction-like)
+    await db.batch([
+      db.prepare(`DELETE FROM files WHERE paste_namespace = ?`).bind(namespace),
+      db.prepare(`DELETE FROM pastes WHERE namespace = ?`).bind(namespace)
+    ]);
+
+    return c.json({ message: "Paste deleted successfully." }, 200);
+
+  } catch (error) {
+    console.error("Error deleting paste:", error);
+    return c.json({ error: "Internal server error occurred during deletion." }, 500);
+  }
+});
 
 export default pages 
