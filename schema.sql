@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS pastes (
 
 CREATE TABLE IF NOT EXISTS files (
   paste_namespace TEXT NOT NULL REFERENCES pastes(namespace) ON DELETE CASCADE,
-  file_index INTEGER NOT NULL CHECK (file_index >= 0 AND file_index < 6),
+  file_index INTEGER NOT NULL CHECK (file_index >= 0),
   filename TEXT,
   language TEXT,
   content TEXT NOT NULL,
