@@ -227,7 +227,7 @@ export const getViewPasteHTML = (paste: PasteData): string => `<!DOCTYPE html>
     </div>
 
     <div class="actions">
-      <button onclick="downloadAllFiles()" class="btn btn-secondary"><i class="fas fa-file-archive"></i> Download as .txt</button>
+      <button onclick="downloadAllFiles()" class="btn btn-secondary"><i class="fas fa-file-archive"></i> Download as file</button>
       <button onclick="copyPasteUrl(event)" class="btn btn-secondary" id="copy-url-btn"><i class="fas fa-link"></i> Copy URL</button>
       <div id="owner-actions" style="display: none; gap: 1rem; flex-wrap: wrap;">
         <button onclick="deletePaste()" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Delete Paste</button>
